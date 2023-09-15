@@ -41,18 +41,6 @@ let controls;
 let cursors;
 let player;
 
-// Runs once, loads up assets like images and audio
-function preload() {
-  this.load.image("tiles", "./tilemap_packed.png");
-  this.load.image("potion", "./potion.png");
-  this.load.image("enemy", "./enemy.png");
-  this.load.tilemapTiledJSON("map", "./map/map.json");
-  this.load.spritesheet("knight", "./knight/knight_packed.png", {
-    frameWidth: 16,
-    frameHeight: 16,
-  });
-}
-
 // Runs once, after all assets in preload
 function create() {
   // Parameters: layer name (or index) from Tiled, tileset, x, y
@@ -368,6 +356,7 @@ function redraw()
   drawobjects(level.enemies);
 
   // Draw player
+  drawtile(132, Math.floor(gs.x), Math.floor(gs.y));
 }
 
 function rafcallback(timestamp)
@@ -401,8 +390,8 @@ function rafcallback(timestamp)
 function startgame()
 {
   // Set player to spawn point
-  gs.x=Math.floor(level.spawn.x);
-  gs.y=Math.floor(level.spawn.y);
+  gs.x=Math.floor(level.spawn.x-(TILESIZE/2));
+  gs.y=Math.floor(level.spawn.y-(TILESIZE/2));
 
   // Scroll to keep player in view
   scrolltoplayer(false);
