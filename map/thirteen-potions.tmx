@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" tiledversion="1.0.3" orientation="orthogonal" renderorder="left-down" width="48" height="32" tilewidth="16" tileheight="16" nextobjectid="1">
+<map version="1.4" tiledversion="1.4.2" orientation="orthogonal" renderorder="left-down" width="48" height="32" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="1">
  <tileset firstgid="1" source="thirteen-potions.tsx"/>
- <layer name="Ground" width="48" height="32">
+ <layer id="1" name="Ground" width="48" height="32">
   <data encoding="csv">
 49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,0,0,0,
 49,49,49,43,43,50,49,49,49,49,49,50,43,1,1,1,1610612787,43,50,50,50,50,50,50,50,49,49,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1610612787,49,49,50,0,0,0,
@@ -37,7 +37,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer name="Walls" width="48" height="32">
+ <layer id="2" name="Walls" width="48" height="32">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,83,0,0,0,0,0,0,5,27,6,0,0,0,0,0,0,0,0,0,0,0,5,27,27,27,27,27,27,27,27,27,27,27,27,6,0,0,0,0,0,0,0,
@@ -73,7 +73,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup name="Things">
+ <objectgroup id="3" name="Things">
   <object id="1" name="Spawn" x="511.769" y="80.486"/>
   <object id="2" name="Potion 8" type="Potion" gid="116" x="673.853" y="159.101" width="16" height="16"/>
   <object id="3" name="Potion 2" type="Potion" gid="116" x="464.285" y="206.178" width="16" height="16"/>
@@ -89,7 +89,7 @@
   <object id="13" name="Potion 4" type="Potion" gid="116" x="80.079" y="47.4837" width="16" height="16"/>
   <object id="14" name="Potion 6" type="Potion" gid="116" x="416.45" y="255.532" width="16" height="16"/>
  </objectgroup>
- <objectgroup name="Enemies">
+ <objectgroup id="4" name="Enemies">
   <object id="15" name="Enemy 6" type="Enemy" gid="122" x="369.503" y="172.574" width="16" height="16"/>
   <object id="16" name="Enemy 1" type="Enemy" gid="122" x="688.471" y="111.495" width="16" height="16"/>
   <object id="17" name="Enemy 2" type="Enemy" gid="122" x="674.898" y="381.261" width="16" height="16"/>
