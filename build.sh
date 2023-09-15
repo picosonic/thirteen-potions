@@ -89,3 +89,15 @@ then
 
   echo "done"
 fi
+
+if [ "${param}" == "run" ]
+then
+  curbrowser=`which xdg-open >/dev/null 2>&1`
+  if [ "${curbrowser}" == "" ]
+  then
+    curbrowser="firefox"
+  fi
+
+  ${curbrowser} "index.html" >/dev/null 2>&1
+  exit 0
+fi
