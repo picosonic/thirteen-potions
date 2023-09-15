@@ -59,6 +59,17 @@ then
     echo -n "]," >> "${leveljs}"
   done
 
+  for assettype in "Things" "Enemies"
+  do
+    echo -n "${assettype}:[" | tr 'A-Z' 'a-z' >> "${leveljs}"
+    cat "${mapfile}" | tr -d '\n' | sed 's/<objectgroup /\n<objectgroup /g' | grep "${assettype}" | sed 's/</\n</g' | grep "<object " | grep "type=" | awk -F'"' '{ print "{id:"$8",x:"$10",y:"$12"}," }' | tr -d '\n' >> "${leveljs}"
+    echo -n "]," >> "${leveljs}"
+  done
+
+  echo -n "spawn:{" >> "${leveljs}"
+  cat "${mapfile}" | tr -d '\n' | sed 's/<objectgroup /\n<objectgroup /g' | grep "Things" | sed 's/</\n</g' | grep "<object " | grep "Spawn" | awk -F'"' '{ print "x:"$6",y:"$8"" }' | tr -d '\n' >> "${leveljs}"
+  echo -n "}" >> "${leveljs}"
+
   echo -n "};" >> "${leveljs}"
 
   echo "done"

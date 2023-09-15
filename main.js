@@ -342,6 +342,12 @@ function drawlevel(tiles)
   }
 }
 
+// Draw objects
+function drawobjects(objs)
+{
+  objs.forEach((obj) => drawtile(obj.id-1, Math.floor(obj.x), Math.floor(obj.y)-TILESIZE));
+}
+
 function redraw()
 {
   // Clear the canvas
@@ -354,7 +360,11 @@ function redraw()
   drawlevel(level.walls);
 
   // Draw potions
+  drawobjects(level.things);
+
   // Draw enemies
+  drawobjects(level.enemies);
+
   // Draw player
 }
 
