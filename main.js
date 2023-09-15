@@ -311,6 +311,11 @@ function playfieldsize()
 // Draw tile
 function drawtile(tileid, x, y)
 {
+  // TODO handle rotate/flip bits
+
+  // Mask off rotate/flip bits
+  tileid=tileid&0xffff;
+
   // Don't draw tile 0 (background) or below
   if (tileid<=0) return;
 
@@ -331,7 +336,7 @@ function drawlevel(tiles)
   {
     for (var x=0; x<level.width; x++)
     {
-      var tile=parseInt(tiles[(y*level.width)+x]||0, 10);
+      var tile=parseInt(tiles[(y*level.width)+x]||1, 10);
       drawtile(tile-1, x*TILESIZE, y*TILESIZE);
     }
   }
