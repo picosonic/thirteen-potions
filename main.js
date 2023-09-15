@@ -22,9 +22,26 @@ var gs={
   tilemap:null,
   tilemapflip:null,
 
+  // Main character
+  x:0, // x position
+  y:0, // y position
+  vs:0, // vertical speed
+  hs:0, // horizontal speed
+  htime:0, // hurt timer following enemy collision
+  dir:0, //direction (-1=left, 0=none, 1=right)
+  speed:100, // walking speed
+  flip:false, // if player is horizontally flipped
+
   // Level attributes
   xoffset:0, // current view offset from left (horizontal scroll)
   yoffset:0, // current view offset from top (vertical scroll)
+
+  // Input
+  keystate:KEYNONE,
+  padstate:KEYNONE,
+  gamepadbuttons:[], // Button mapping
+  gamepadaxes:[], // Axes mapping
+  gamepadaxesval:[], // Axes values
 
   // Other vars
   text:"",
@@ -32,7 +49,6 @@ var gs={
   timerText:"",
   finalTime:-1,
   playerStartedMoving:false,
-  speed:100,
   potionScore:0,
 };
 
@@ -359,6 +375,53 @@ function redraw()
   drawtile(132, Math.floor(gs.x), Math.floor(gs.y));
 }
 
+// Update player movements
+function updatemovements()
+{
+  // When a movement key is pressed, adjust players speed and direction
+  if ((gs.keystate!=KEYNONE) || (gs.padstate!=KEYNONE))
+  {
+    // Left key
+    if ((ispressed(KEYLEFT)) && (!ispressed(KEYRIGHT)))
+    {
+      gs.hs=gs.htime==0?-gs.speed:-(gs.speed/2);
+      gs.dir=-1;
+      gs.flip=true;
+    }
+
+    // Right key
+    if ((ispressed(KEYRIGHT)) && (!ispressed(KEYLEFT)))
+    {
+      gs.hs=gs.htime==0?gs.speed:(gs.speed/2);
+      gs.dir=1;
+      gs.flip=false;
+    }
+
+    // Extra processing for top-down levels
+    if (gs.topdown)
+    {
+      // Up key
+      if ((ispressed(KEYUP)) && (!ispressed(KEYDOWN)))
+      {
+        gs.vs=gs.htime==0?-gs.speed:-(gs.speed/2);
+      }
+
+      // Down key
+      if ((ispressed(KEYDOWN)) && (!ispressed(KEYUP)))
+      {
+        gs.vs=gs.htime==0?gs.speed:(gs.speed/2);
+      } 
+    }
+  }
+}
+
+// Update function called once per frame
+function update()
+{
+  // Apply keystate to player
+  updatemovements();
+}
+
 function rafcallback(timestamp)
 {
   // First time round, just save epoch
@@ -371,10 +434,18 @@ function rafcallback(timestamp)
     if ((gs.acc>gs.step) && ((gs.acc/gs.step)>(60*15)))
       gs.acc=gs.step*2;
 
+    // Gamepad support
+    try
+    {
+      if (!!(navigator.getGamepads))
+        gamepadscan();
+    }
+    catch(e){}
+
     // Process "steps" since last call
     while (gs.acc>gs.step)
     {
-      //update();
+      update();
       gs.acc-=gs.step;
     }
 
@@ -403,6 +474,19 @@ function startgame()
 // Entry point
 function init()
 {
+  // Initialise stuff
+  document.onkeydown=function(e)
+  {
+    e = e || window.event;
+    updatekeystate(e, 1);
+  };
+
+  document.onkeyup=function(e)
+  {
+    e = e || window.event;
+    updatekeystate(e, 0);
+  };
+
   // Stop things from being dragged around
   window.ondragstart=function(e)
   {
