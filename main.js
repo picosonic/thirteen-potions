@@ -397,22 +397,21 @@ function updatemovements()
       gs.flip=false;
     }
 
-    // Extra processing for top-down levels
-    if (gs.topdown)
+    // Up key
+    if ((ispressed(KEYUP)) && (!ispressed(KEYDOWN)))
     {
-      // Up key
-      if ((ispressed(KEYUP)) && (!ispressed(KEYDOWN)))
-      {
-        gs.vs=gs.htime==0?-gs.speed:-(gs.speed/2);
-      }
-
-      // Down key
-      if ((ispressed(KEYDOWN)) && (!ispressed(KEYUP)))
-      {
-        gs.vs=gs.htime==0?gs.speed:(gs.speed/2);
-      } 
+      gs.vs=gs.htime==0?-gs.speed:-(gs.speed/2);
     }
+
+    // Down key
+    if ((ispressed(KEYDOWN)) && (!ispressed(KEYUP)))
+    {
+      gs.vs=gs.htime==0?gs.speed:(gs.speed/2);
+    } 
   }
+
+  gs.x+=(gs.hs/100);
+  gs.y+=(gs.vs/100);
 }
 
 // Update function called once per frame
