@@ -1,8 +1,8 @@
 // Global constants
-const XMAX=720;
-const YMAX=480;
 const TILESIZE=16;
 const TILESPERROW=12;
+const XMAX=180;
+const YMAX=120;
 
 // Game state
 var gs={
@@ -311,8 +311,8 @@ function playfieldsize()
 // Draw tile
 function drawtile(tileid, x, y)
 {
-  // Don't draw tile 0 (background)
-  if (tileid==0) return;
+  // Don't draw tile 0 (background) or below
+  if (tileid<=0) return;
 
   // Clip to what's visible
   if (((x-gs.xoffset)<-TILESIZE) && // clip left
@@ -331,7 +331,7 @@ function drawlevel(tiles)
   {
     for (var x=0; x<level.width; x++)
     {
-      var tile=parseInt(tiles[(y*level.width)+x]||1, 10);
+      var tile=parseInt(tiles[(y*level.width)+x]||0, 10);
       drawtile(tile-1, x*TILESIZE, y*TILESIZE);
     }
   }
@@ -340,7 +340,7 @@ function drawlevel(tiles)
 function redraw()
 {
   // Clear the canvas
-  gs.ctx.fillRect(0, 0, gs.canvas.width, gs.canvas.height);
+  gs.ctx.clearRect(0, 0, gs.canvas.width, gs.canvas.height);
 
   // Draw ground
   drawlevel(level.ground);
