@@ -308,6 +308,55 @@ function playfieldsize()
   gs.canvas.style.transform='scale('+gs.scale+')';
 }
 
+// Scroll level to player
+function scrolltoplayer(dampened)
+{
+  var xmiddle=Math.floor((XMAX-TILESIZE)/2);
+  var ymiddle=Math.floor((YMAX-TILESIZE)/2);
+  var maxxoffs=((gs.width*TILESIZE)-XMAX);
+  var maxyoffs=((gs.height*TILESIZE)-YMAX);
+
+  // Work out where x and y offsets should be
+  var newxoffs=gs.x-xmiddle;
+  var newyoffs=gs.y-ymiddle;
+
+  if (newxoffs>maxxoffs) newxoffs=maxxoffs;
+  if (newyoffs>maxyoffs) newyoffs=maxyoffs;
+
+  if (newxoffs<0) newxoffs=0;
+  if (newyoffs<0) newyoffs=0;
+
+  // Determine if xoffset should be changed
+  if (newxoffs!=gs.xoffset)
+  {
+    if (dampened)
+    {
+      var xdelta=1;
+
+      if (Math.abs(gs.xoffset-newxoffs)>(XMAX/5)) xdelta=4;
+
+      gs.xoffset+=newxoffs>gs.xoffset?xdelta:-xdelta;
+    }
+    else
+      gs.xoffset=newxoffs;
+  }
+
+  // Determine if xoffset should be changed
+  if (newyoffs!=gs.yoffset)
+  {
+    if (dampened)
+    {
+      var ydelta=1;
+
+      if (Math.abs(gs.yoffset-newyoffs)>(YMAX/5)) ydelta=4;
+
+      gs.yoffset+=newyoffs>gs.yoffset?ydelta:-ydelta;
+    }
+    else
+      gs.yoffset=newyoffs;
+  }
+}
+
 // Draw tile
 function drawtile(tileid, x, y)
 {
@@ -350,6 +399,9 @@ function drawobjects(objs)
 
 function redraw()
 {
+  // Scroll to keep player in view
+  scrolltoplayer(true);
+
   // Clear the canvas
   gs.ctx.clearRect(0, 0, gs.canvas.width, gs.canvas.height);
 
@@ -398,6 +450,13 @@ function rafcallback(timestamp)
 
 function startgame()
 {
+  // Set player to spawn point
+  gs.x=Math.floor(level.spawn.x);
+  gs.y=Math.floor(level.spawn.y);
+
+  // Scroll to keep player in view
+  scrolltoplayer(false);
+
   // Start frame callbacks
   window.requestAnimationFrame(rafcallback);
 }
