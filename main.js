@@ -37,16 +37,9 @@ var gs={
 };
 
 /*
-let game = new Phaser.Game(config);
 let controls;
 let cursors;
 let player;
-
-let PotionLayer;
-let potions;
-
-let EnemyLayer;
-let enemies;
 
 // Runs once, loads up assets like images and audio
 function preload() {
@@ -62,45 +55,10 @@ function preload() {
 
 // Runs once, after all assets in preload
 function create() {
-  const map = this.make.tilemap({
-    key: "map",
-    tileWidth: 16,
-    tileHeight: 16,
-  });
-  const tileset = map.addTilesetImage("thirteen-potions", "tiles");
-
   // Parameters: layer name (or index) from Tiled, tileset, x, y
   const groundLayer = map.createLayer("Ground", tileset, 0, 0);
   const wallLayer = map.createLayer("Walls", tileset, 0, 0);
   wallLayer.setCollisionByExclusion([-1]);
-  PotionLayer = map.getObjectLayer("Things")["objects"].slice(1);
-  EnemyLayer = map.getObjectLayer("Enemies")["objects"];
-
-  // Adding potions
-  potions = this.physics.add.staticGroup();
-  PotionLayer.forEach((object) => {
-    let obj = potions.create(object.x, object.y - 16, "potion");
-    obj.setScale(object.width / 16, object.height / 16);
-    obj.setOrigin(0);
-    obj.body.width = object.width;
-    obj.body.height = object.height;
-  });
-
-  // Adding enemies
-  enemies = this.physics.add.group();
-  EnemyLayer.forEach((object) => {
-    let obj = enemies.create(object.x, object.y - 16, "enemy");
-    obj.setScale(object.width / 16, object.height / 16);
-    obj.setOrigin(0);
-    obj.body.width = object.width;
-    obj.body.height = object.height;
-  });
-
-  // Adding player to the screen
-  const spawnPoint = map.findObject(
-    "Things",
-    (obj) => obj.name === "Spawn"
-  );
 
   player = this.physics.add
     .sprite(spawnPoint.x, spawnPoint.y, "knight")
@@ -151,12 +109,6 @@ function create() {
   this.physics.add.overlap(player, potions, collectPotion, null, this);
   this.physics.add.overlap(player, enemies, zappy, null, this);
 
-  // Phaser default camera
-  let camera = this.cameras.main;
-  camera.zoom = 4;
-  camera.setBounds(0, 0, 720, 480);
-  camera.startFollow(player);
-
   cursors = this.input.keyboard.createCursorKeys();
 
   text = this.add.text(270, 180, `Potions left: ${13 - potionScore}`, {
@@ -165,7 +117,6 @@ function create() {
     backgroundColor: "#3B2731",
     padding: { x: 2, y: 2 },
   });
-  text.setScrollFactor(0);
 
   // Timer Text
   timerText = this.add.text(270, 287, "Time: 0", {
@@ -174,7 +125,6 @@ function create() {
     backgroundColor: "#3B2731",
     padding: { x: 2, y: 2 },
   });
-  timerText.setScrollFactor(0);
 
   this.time.addEvent({
     delay: 1000,
