@@ -31,6 +31,7 @@ var gs={
   dir:0, //direction (-1=left, 0=none, 1=right)
   speed:100, // walking speed
   flip:false, // if player is horizontally flipped
+  alpha:1, // Level of transparency
 
   // Level attributes
   xoffset:0, // current view offset from left (horizontal scroll)
@@ -151,19 +152,6 @@ function collectPotion(player, potion) {
   return false;
 }
 
-function zappy() {
-  speed = 50;
-  player.alpha = 0.6;
-  player.tint = 0xff0000;
-  setTimeout(() => {
-    speed = 100;
-    player.alpha = 1;
-    player.clearTint();
-  }, 2000);
-
-  return false;
-}
-
 // Runs once per frame for the duration of the scene
 function update(time, delta) {
   const prevVelocity = player.body.velocity.clone();
@@ -233,6 +221,20 @@ function update(time, delta) {
   }
 }
 */
+
+// Player has hit an ememy, so make transparent, tint red and halve speed for 2 seconds
+function zappy()
+{
+  gs.speed=50;
+  gs.alpha=0.6;
+  //player.tint = 0xff0000;
+
+  setTimeout(() => {
+    gs.speed=100;
+    gs.alpha=1;
+    //player.clearTint();
+  }, 2000);
+}
 
 // Handle resize events
 function playfieldsize()
@@ -372,7 +374,10 @@ function redraw()
   drawobjects(level.enemies);
 
   // Draw player
+  // TODO adjust frame based on animation
+  gs.ctx.globalAlpha=gs.alpha;
   drawtile(132, Math.floor(gs.x), Math.floor(gs.y));
+  gs.ctx.globalAlpha=1;
 }
 
 // Check if player has tried to leave the map
