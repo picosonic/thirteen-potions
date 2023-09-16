@@ -29,9 +29,10 @@ var gs={
   hs:0, // horizontal speed
   htime:0, // hurt timer following enemy collision
   dir:0, //direction (-1=left, 0=none, 1=right)
-  speed:100, // walking speed
+  speed:1, // walking speed
   flip:false, // if player is horizontally flipped
   alpha:1, // Level of transparency
+  friction:1,
 
   // Level attributes
   xoffset:0, // current view offset from left (horizontal scroll)
@@ -54,10 +55,6 @@ var gs={
 };
 
 /*
-let controls;
-let cursors;
-let player;
-
 // Runs once, after all assets in preload
 function create() {
   // Parameters: layer name (or index) from Tiled, tileset, x, y
@@ -225,12 +222,12 @@ function update(time, delta) {
 // Player has hit an ememy, so make transparent, tint red and halve speed for 2 seconds
 function zappy()
 {
-  gs.speed=50;
+  gs.speed=0.5;
   gs.alpha=0.6;
   //player.tint = 0xff0000;
 
   setTimeout(() => {
-    gs.speed=100;
+    gs.speed=1;
     gs.alpha=1;
     //player.clearTint();
   }, 2000);
@@ -398,9 +395,141 @@ function offmapcheck()
         gs.y=(level.height-1)*TILESIZE;
 }
 
+// Check if area a overlaps with area b
+function overlap(ax, ay, aw, ah, bx, by, bw, bh)
+{
+  // Check horizontally
+  if ((ax<bx) && ((ax+aw))<=bx) return false; // a too far left of b
+  if ((ax>bx) && ((bx+bw))<=ax) return false; // a too far right of b
+
+  // Check vertically
+  if ((ay<by) && ((ay+ah))<=by) return false; // a too far above b
+  if ((ay>by) && ((by+bh))<=ay) return false; // a too far below b
+
+  return true;
+}
+
+function collide(px, py, pw, ph)
+{
+  // Check for screen edge collision
+  if (px<=(0-(TILESIZE/5))) return true;
+  if ((px+(TILESIZE/3))>=(level.width*TILESIZE)) return true;
+
+  // Look through all the tiles for a collision
+  for (var y=0; y<level.height; y++)
+  {
+    for (var x=0; x<level.width; x++)
+    {
+      var tile=parseInt(level.walls[(y*level.width)+x]||1, 10);
+
+      if ((tile-1)!=0)
+      {
+        if (overlap(px, py, pw, ph, x*TILESIZE, y*TILESIZE, TILESIZE, TILESIZE))
+          return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+// Collision check with player hitbox
+function playercollide(x, y)
+{
+  return collide(x+(TILESIZE/3), y+((TILESIZE/5)*2), TILESIZE/3, (TILESIZE/5)*3);
+}
+
 // Move the player by the appropriate amount, up to a collision
 function collisioncheck()
 {
+  var loop;
+
+  // Check for horizontal collisions
+  if ((gs.hs!=0) && (playercollide(gs.x+gs.hs, gs.y)))
+  {
+    loop=TILESIZE;
+    // A collision occured, so move the character until it hits
+    while ((!playercollide(gs.x+(gs.hs>0?1:-1), gs.y)) && (loop>0))
+    {
+      gs.x+=(gs.hs>0?1:-1);
+      loop--;
+    }
+
+    // Stop horizontal movement
+    gs.hs=0;
+  }
+  gs.x+=Math.floor(gs.hs);
+
+  // Check for vertical collisions
+  if ((gs.vs!=0) && (playercollide(gs.x, gs.y+gs.vs)))
+  {
+    loop=TILESIZE;
+    // A collision occured, so move the character until it hits
+    while ((!playercollide(gs.x, gs.y+(gs.vs>0?1:-1))) && (loop>0))
+    {
+      gs.y+=(gs.vs>0?1:-1);
+      loop--;
+    }
+
+    // Stop vertical movement
+    gs.vs=0;
+  }
+  gs.y+=Math.floor(gs.vs);
+}
+
+
+// If no input detected, slow the player using friction
+function standcheck()
+{
+  // When no horizontal movement pressed, slow down by friction
+  if (((!ispressed(KEYLEFT)) && (!ispressed(KEYRIGHT))) ||
+      ((ispressed(KEYLEFT)) && (ispressed(KEYRIGHT))))
+  {
+    // Going left
+    if (gs.dir==-1)
+    {
+      if (gs.hs<0)
+      {
+        gs.hs+=gs.friction;
+      }
+      else
+      {
+        gs.hs=0;
+        gs.dir=0;
+      }
+    }
+
+    // Going right
+    if (gs.dir==1)
+    {
+      if (gs.hs>0)
+      {
+        gs.hs-=gs.friction;
+      }
+      else
+      {
+        gs.hs=0;
+        gs.dir=0;
+      }
+    }
+  }
+
+  // When no horizontal movement pressed, slow down by friction
+  if (((!ispressed(KEYUP)) && (!ispressed(KEYDOWN))) ||
+  ((ispressed(KEYUP)) && (ispressed(KEYDOWN))))
+  {
+    // Going up
+    if (gs.vs<0)
+    {
+      gs.vs+=gs.friction;
+    }
+
+    // Going down
+    if (gs.vs>0)
+    {
+      gs.vs-=gs.friction;
+    }
+  }
 }
 
 // Update player movements
@@ -411,6 +540,9 @@ function updatemovements()
 
   // Move the player by the appropriate amount, up to a collision
   collisioncheck();
+
+  // If no input detected, slow the player using friction
+  standcheck(); 
 
   // When a movement key is pressed, adjust players speed and direction
   if ((gs.keystate!=KEYNONE) || (gs.padstate!=KEYNONE))
@@ -443,10 +575,6 @@ function updatemovements()
       gs.vs=gs.htime==0?gs.speed:(gs.speed/2);
     } 
   }
-
-  // Temporarily here to make character move
-  gs.x+=(gs.hs/100);
-  gs.y+=(gs.vs/100);
 }
 
 // Update function called once per frame
