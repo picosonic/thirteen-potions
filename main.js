@@ -29,10 +29,9 @@ var gs={
   hs:0, // horizontal speed
   htime:0, // hurt timer following enemy collision
   dir:0, //direction (-1=left, 0=none, 1=right)
-  speed:1, // walking speed
+  speed:2, // walking speed
   flip:false, // if player is horizontally flipped
   alpha:1, // Level of transparency
-  friction:1,
 
   // Level attributes
   xoffset:0, // current view offset from left (horizontal scroll)
@@ -57,17 +56,6 @@ var gs={
 /*
 // Runs once, after all assets in preload
 function create() {
-  // Parameters: layer name (or index) from Tiled, tileset, x, y
-  const groundLayer = map.createLayer("Ground", tileset, 0, 0);
-  const wallLayer = map.createLayer("Walls", tileset, 0, 0);
-  wallLayer.setCollisionByExclusion([-1]);
-
-  player = this.physics.add
-    .sprite(spawnPoint.x, spawnPoint.y, "knight")
-    .setInteractive(this.input.makePixelPerfect(0));
-  this.physics.add.collider(player, wallLayer);
-  player.setCollideWorldBounds(true);
-
   this.anims.create({
     key: "right",
     frames: this.anims.generateFrameNumbers("knight", {
@@ -108,11 +96,6 @@ function create() {
     repeat: -1,
   });
 
-  this.physics.add.overlap(player, potions, collectPotion, null, this);
-  this.physics.add.overlap(player, enemies, zappy, null, this);
-
-  cursors = this.input.keyboard.createCursorKeys();
-
   text = this.add.text(270, 180, `Potions left: ${13 - potionScore}`, {
     font: "8px",
     fill: "#ffffff",
@@ -142,13 +125,6 @@ function create() {
   });
 }
 
-function collectPotion(player, potion) {
-  potion.destroy(potion.x, potion.y); // remove the tile
-  potionScore++;
-  text.setText(`Potions left: ${13 - potionScore}`);
-  return false;
-}
-
 // Runs once per frame for the duration of the scene
 function update(time, delta) {
   const prevVelocity = player.body.velocity.clone();
@@ -175,20 +151,6 @@ function update(time, delta) {
       Phaser.Math.Between(-16, 16)
     );
   });
-
-  // Horizontal movement
-  if (cursors.left.isDown) {
-    player.body.setVelocityX(speed * -1);
-  } else if (cursors.right.isDown) {
-    player.body.setVelocityX(speed);
-  }
-
-  // Vertical movement
-  if (cursors.up.isDown) {
-    player.body.setVelocityY(speed * -1);
-  } else if (cursors.down.isDown) {
-    player.body.setVelocityY(speed);
-  }
 
   // Normalize and scale the velocity so that player can't move faster along a diagonal
   player.body.velocity.normalize().scale(speed);
@@ -220,17 +182,21 @@ function update(time, delta) {
 */
 
 // Player has hit an ememy, so make transparent, tint red and halve speed for 2 seconds
-function zappy()
+function zappy(obj)
 {
-  gs.speed=0.5;
+  // Only set timeout once - TODO change to htime
+  if (gs.alpha==1)
+  {
+    setTimeout(() => {
+      gs.speed=2;
+      gs.alpha=1;
+      //player.clearTint();
+    }, 2000);
+  }
+
+  gs.speed=1;
   gs.alpha=0.6;
   //player.tint = 0xff0000;
-
-  setTimeout(() => {
-    gs.speed=1;
-    gs.alpha=1;
-    //player.clearTint();
-  }, 2000);
 }
 
 // Handle resize events
@@ -478,19 +444,19 @@ function collisioncheck()
 }
 
 
-// If no input detected, slow the player using friction
+// If no input detected, stop the player moving
 function standcheck()
 {
-  // When no horizontal movement pressed, slow down by friction
+  // When no horizontal movement
   if (((!ispressed(KEYLEFT)) && (!ispressed(KEYRIGHT))) ||
       ((ispressed(KEYLEFT)) && (ispressed(KEYRIGHT))))
   {
     // Going left
     if (gs.dir==-1)
     {
-      if (gs.hs<0)
+      if (gs.hs<=0)
       {
-        gs.hs+=gs.friction;
+        gs.hs=0;
       }
       else
       {
@@ -502,9 +468,9 @@ function standcheck()
     // Going right
     if (gs.dir==1)
     {
-      if (gs.hs>0)
+      if (gs.hs>=0)
       {
-        gs.hs-=gs.friction;
+        gs.hs=0;
       }
       else
       {
@@ -514,21 +480,11 @@ function standcheck()
     }
   }
 
-  // When no horizontal movement pressed, slow down by friction
+  // When no horizontal movement
   if (((!ispressed(KEYUP)) && (!ispressed(KEYDOWN))) ||
   ((ispressed(KEYUP)) && (ispressed(KEYDOWN))))
   {
-    // Going up
-    if (gs.vs<0)
-    {
-      gs.vs+=gs.friction;
-    }
-
-    // Going down
-    if (gs.vs>0)
-    {
-      gs.vs-=gs.friction;
-    }
+    gs.vs=0;
   }
 }
 
@@ -550,7 +506,7 @@ function updatemovements()
     // Left key
     if ((ispressed(KEYLEFT)) && (!ispressed(KEYRIGHT)))
     {
-      gs.hs=gs.htime==0?-gs.speed:-(gs.speed/2);
+      gs.hs=-gs.speed;
       gs.dir=-1;
       gs.flip=true;
     }
@@ -558,7 +514,7 @@ function updatemovements()
     // Right key
     if ((ispressed(KEYRIGHT)) && (!ispressed(KEYLEFT)))
     {
-      gs.hs=gs.htime==0?gs.speed:(gs.speed/2);
+      gs.hs=gs.speed;
       gs.dir=1;
       gs.flip=false;
     }
@@ -566,15 +522,31 @@ function updatemovements()
     // Up key
     if ((ispressed(KEYUP)) && (!ispressed(KEYDOWN)))
     {
-      gs.vs=gs.htime==0?-gs.speed:-(gs.speed/2);
+      gs.vs=-gs.speed;
     }
 
     // Down key
     if ((ispressed(KEYDOWN)) && (!ispressed(KEYUP)))
     {
-      gs.vs=gs.htime==0?gs.speed:(gs.speed/2);
+      gs.vs=gs.speed;
     } 
   }
+}
+
+// Called when potion collected
+function collectPotion(obj)
+{
+  obj.del=true; // remove the tile
+
+  gs.potionScore++;
+//  text.setText(`Potions left: ${13 - potionScore}`);
+}
+
+// Check for collision between player and object
+function checkcollide(obj, callback)
+{
+  if (overlap(gs.x+(TILESIZE/3), gs.y+((TILESIZE/5)*2), TILESIZE/3, (TILESIZE/5)*3, obj.x, obj.y-TILESIZE, TILESIZE, TILESIZE))
+    callback(obj);
 }
 
 // Update function called once per frame
@@ -582,6 +554,20 @@ function update()
 {
   // Apply keystate to player
   updatemovements();
+
+  // Check for collision with "things"
+  level.things.forEach((obj) => checkcollide(obj, collectPotion));
+
+  // Check for collision with "enemies"
+  level.enemies.forEach((obj) => checkcollide(obj, zappy));
+
+  // Remove anything marked for deletion
+  var id=level.things.length;
+  while (id--)
+  {
+    if (level.things[id].del!=undefined)
+      level.things.splice(id, 1);
+  }
 }
 
 function rafcallback(timestamp)
