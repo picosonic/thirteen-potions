@@ -375,9 +375,38 @@ function redraw()
   drawtile(132, Math.floor(gs.x), Math.floor(gs.y));
 }
 
+// Check if player has tried to leave the map
+function offmapcheck()
+{
+  // Horizontally
+  if (gs.x<0)
+    gs.x=0;
+  else
+    if ((gs.x+TILESIZE+1)>level.width*TILESIZE)
+      gs.x=(level.width-1)*TILESIZE;
+
+  // Vertically
+  if (gs.y<0)
+      gs.y=0;
+    else
+      if ((gs.y+TILESIZE+1)>level.height*TILESIZE)
+        gs.y=(level.height-1)*TILESIZE;
+}
+
+// Move the player by the appropriate amount, up to a collision
+function collisioncheck()
+{
+}
+
 // Update player movements
 function updatemovements()
 {
+  // Check if player has tried to leave the map
+  offmapcheck();
+
+  // Move the player by the appropriate amount, up to a collision
+  collisioncheck();
+
   // When a movement key is pressed, adjust players speed and direction
   if ((gs.keystate!=KEYNONE) || (gs.padstate!=KEYNONE))
   {
@@ -410,6 +439,7 @@ function updatemovements()
     } 
   }
 
+  // Temporarily here to make character move
   gs.x+=(gs.hs/100);
   gs.y+=(gs.vs/100);
 }
