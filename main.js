@@ -110,7 +110,6 @@ function zappy(obj)
 
   gs.speed=1;
   gs.alpha=0.6;
-  //player.tint = 0xff0000;
 }
 
 // Handle resize events
@@ -288,7 +287,11 @@ function redraw()
 
   // Draw player
   gs.ctx.globalAlpha=gs.alpha;
+  if (gs.htime>0)
+    gs.ctx.filter="invert(23%) sepia(91%) saturate(5953%) hue-rotate(355deg) brightness(91%) contrast(125%)";
   drawtile(ANIMOFFSET+gs.animgroup+gs.tileoffs, Math.floor(gs.x), Math.floor(gs.y));
+  if (gs.htime>0)
+    gs.ctx.filter="invert(0%) sepia(0%) saturate(100%) hue-rotate(0deg) brightness(100%) contrast(100%)";
   gs.ctx.globalAlpha=1;
 }
 
@@ -514,7 +517,6 @@ function updatemovements()
     {
       gs.speed=2;
       gs.alpha=1;
-      //player.clearTint();
     }
   }
 
