@@ -168,10 +168,51 @@ function scrolltoplayer()
       gs.yoffset=newyoffs;
 }
 
+function drawrotatedtile(tilemap, x1, y1, w1, h1, x2, y2, w2, h2, angleInRadians)
+{
+  gs.ctx.translate(x2+(TILESIZE/2), y2+(TILESIZE/2));
+  gs.ctx.rotate(angleInRadians);
+  gs.ctx.drawImage(tilemap, x1, y1, w1, h1, -(TILESIZE/2), -(TILESIZE/2), w2, h2);
+  gs.ctx.rotate(-angleInRadians);
+  gs.ctx.translate(-(x2+(TILESIZE/2)), -(y2+(TILESIZE/2)));
+}
+
 // Draw tile
 function drawtile(tileid, x, y)
 {
-  // TODO handle rotate/flip bits
+  var angle=0;
+  var flip=false;
+
+  // Handle rotate/flip bits
+  switch (Math.abs((tileid&0xE0000000)>>(7*4)))
+  {
+    case 0x00: // normal
+      break;
+
+    case 0x04: // flip y
+      flip=true;
+      angle=180;
+      break;      
+
+    case 0x06: // 270 rotated
+      angle=270;
+      break;
+
+    case 0x08: // flip x
+      flip=true;
+      break;
+
+    case 0x0a: // 90 rotated
+      angle=90;
+      break;
+
+    case 0x0c: // 180 rotated
+      angle=180;
+      break;
+
+    default: // unsupported
+      break;
+  }
 
   // Mask off rotate/flip bits
   tileid=tileid&0xffff;
@@ -186,7 +227,24 @@ function drawtile(tileid, x, y)
       ((y-gs.yoffset)>YMAX))   // clip bottom
     return;
 
-  gs.ctx.drawImage(gs.tilemap, (tileid*TILESIZE) % (TILESPERROW*TILESIZE), Math.floor((tileid*TILESIZE) / (TILESPERROW*TILESIZE))*TILESIZE, TILESIZE, TILESIZE, x-gs.xoffset, y-gs.yoffset, TILESIZE, TILESIZE);
+  var tilemap=gs.tilemap;
+  var x1=(tileid*TILESIZE) % (TILESPERROW*TILESIZE);
+  var y1=Math.floor((tileid*TILESIZE) / (TILESPERROW*TILESIZE))*TILESIZE;
+  var w=TILESIZE;
+  var h=TILESIZE;
+  var x2=x-gs.xoffset;
+  var y2=y-gs.yoffset;
+
+  if (flip)
+  {
+    tilemap=gs.tilemapflip;
+    x1=((TILESPERROW*TILESIZE)-((tileid*TILESIZE) % (TILESPERROW*TILESIZE)))-TILESIZE;
+  }
+
+  if (angle!=0)
+    drawrotatedtile(tilemap, x1, y1, w, h, x2, y2, w, h, angle*(Math.PI/180));
+  else
+    gs.ctx.drawImage(tilemap, x1, y1, w, h, x2, y2, w, h);
 }
 
 // Draw level
@@ -229,7 +287,6 @@ function redraw()
   drawobjects(level.enemies);
 
   // Draw player
-  // TODO adjust frame based on animation
   gs.ctx.globalAlpha=gs.alpha;
   drawtile(ANIMOFFSET+gs.animgroup+gs.tileoffs, Math.floor(gs.x), Math.floor(gs.y));
   gs.ctx.globalAlpha=1;
