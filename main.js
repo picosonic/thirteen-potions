@@ -49,58 +49,44 @@ var gs={
   gamepadaxesval:[], // Axes values
 
   // Other vars
-  text:"",
-  time:null,
-  timerText:"",
-  finalTime:null, // time when game completed
+  finalTime:-1, // time when game completed
   startTime:null, // time when game started
   playerStartedMoving:false, // flag used to start timer
   potionScore:0, // number of potions collected
 };
 
-/*
-// Runs once, after all assets in preload
-function create() {
-  text = this.add.text(270, 180, `Potions left: ${13 - potionScore}`, {
-    font: "8px",
-    fill: "#ffffff",
-    backgroundColor: "#3B2731",
-    padding: { x: 2, y: 2 },
-  });
+// Draw text, expanded with color, background etc.
+function drawTextBG(ctx, txt, font, x, y, fg, bg)
+{
+  const padding=2;
 
-  // Timer Text
-  timerText = this.add.text(270, 287, "Time: 0", {
-    font: "9px",
-    fill: "#ffffff",
-    backgroundColor: "#3B2731",
-    padding: { x: 2, y: 2 },
-  });
+  /// lets save current state as we make a lot of changes        
+  ctx.save();
 
-  this.time.addEvent({
-    delay: 1000,
-    callback: function () {
-      if (playerStartedMoving && finalTime === -1) {
-        timerText.setText(
-          "Time: " + Math.ceil((this.time.now - this.startTime) / 1000)
-        );
-      }
-    },
-    callbackScope: this,
-    loop: true,
-  });
+  /// set font
+  ctx.font=font;
+
+  // draw text from top - makes life easier at the moment
+  ctx.textBaseline='top';
+
+  // color for background
+  ctx.fillStyle=bg;
+  
+  // get width of text
+  var width=Math.ceil(ctx.measureText(txt).width);
+
+  // draw background rect assuming height of font
+  ctx.fillRect(x, y, width+(padding*2), 6+(padding*2));
+  
+  // text color
+  ctx.fillStyle=fg;
+
+  // draw text on top
+  ctx.fillText(txt, x+padding, y+padding);
+  
+  // restore original state
+  ctx.restore();
 }
-
-// Runs once per frame for the duration of the scene
-function update(time, delta) {
-  if (potionScore === 13 && finalTime === -1) {
-    finalTime = Math.ceil((this.time.now - this.startTime) / 1000);
-    timerText.setText(`Final Time: ${finalTime} seconds!`);
-  }
-
-  // Normalize and scale the velocity so that player can't move faster along a diagonal
-  player.body.velocity.normalize().scale(speed);
-}
-*/
 
 // Player has hit an ememy, so make transparent, tint red and halve speed for 2 seconds
 function zappy(obj)
@@ -293,6 +279,28 @@ function redraw()
   if (gs.htime>0)
     gs.ctx.filter="invert(0%) sepia(0%) saturate(100%) hue-rotate(0deg) brightness(100%) contrast(100%)";
   gs.ctx.globalAlpha=1;
+
+  // Draw current score
+  drawTextBG(gs.ctx, `Potions left: ${13 - gs.potionScore}`, "normal 8px Courier New", 0, 0, "white", "#3B2731");
+
+  // Draw current time
+  var seconds=0;
+  if (gs.startTime!=null)
+    seconds=Math.ceil((Date.now() - gs.startTime.getTime()) / 1000);
+
+
+  if (gs.finalTime!=-1)
+  {
+    drawTextBG(gs.ctx, `Final Time: ${gs.finalTime} seconds!`, "normal 9px Courier New", 0, YMAX-10, "white", "#3B2731");
+  }
+  else
+  {
+    // Check for game just completed
+    if (gs.potionScore==13)
+      gs.finalTime=seconds;
+
+    drawTextBG(gs.ctx, `Time: ${seconds}`, "normal 9px Courier New", 0, YMAX-10, "white", "#3B2731");
+  }
 }
 
 // Check if player has tried to leave the map
