@@ -131,8 +131,8 @@ function scrolltoplayer()
 {
   var xmiddle=Math.floor((XMAX-TILESIZE)/2);
   var ymiddle=Math.floor((YMAX-TILESIZE)/2);
-  var maxxoffs=((gs.width*TILESIZE)-XMAX);
-  var maxyoffs=((gs.height*TILESIZE)-YMAX);
+  var maxxoffs=((level.width*TILESIZE)-XMAX);
+  var maxyoffs=((level.height*TILESIZE)-YMAX);
 
   // Work out where x and y offsets should be
   var newxoffs=gs.x-xmiddle;
