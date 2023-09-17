@@ -52,10 +52,10 @@ var gs={
   text:"",
   time:null,
   timerText:"",
-  finalTime:-1,
-  startTime:null,
-  playerStartedMoving:false,
-  potionScore:0,
+  finalTime:null, // time when game completed
+  startTime:null, // time when game started
+  playerStartedMoving:false, // flag used to start timer
+  potionScore:0, // number of potions collected
 };
 
 /*
@@ -97,40 +97,8 @@ function update(time, delta) {
     timerText.setText(`Final Time: ${finalTime} seconds!`);
   }
 
-  // Move the enemy around randomly each update
-  enemies.children.iterate(function (enemy) {
-    enemy.body.setVelocity(
-      Phaser.Math.Between(-16, 16),
-      Phaser.Math.Between(-16, 16)
-    );
-  });
-
   // Normalize and scale the velocity so that player can't move faster along a diagonal
   player.body.velocity.normalize().scale(speed);
-
-  if (cursors.up.isDown && cursors.right.isDown) {
-    player.anims.play("up-right", true);
-  } else if (cursors.up.isDown && cursors.left.isDown) {
-    player.anims.play("up-left", true);
-  } else if (cursors.left.isDown) {
-    player.anims.play("left", true);
-  } else if (cursors.right.isDown) {
-    player.anims.play("right", true);
-  } else if (cursors.up.isDown) {
-    player.anims.play("up-right", true);
-  } else if (cursors.down.isDown) {
-    player.anims.play("right", true);
-  } else {
-    player.anims.stop();
-
-    // If we were moving, pick and idle frame to use
-    if (prevVelocity.x < 0) player.setTexture("knight", 2); // look left
-    else if (prevVelocity.x > 0)
-      player.setTexture("knight", 0); // look right
-    else if (prevVelocity.y < 0)
-      player.setTexture("knight", 4); // look up
-    else if (prevVelocity.y > 0) player.setTexture("knight", 0); // look down
-  }
 }
 */
 
@@ -522,6 +490,26 @@ function checkcollide(obj, callback)
     callback(obj);
 }
 
+function moveenemy(obj)
+{
+  var deltax=Math.floor(Math.random()*3)-1;
+  var deltay=Math.floor(Math.random()*3)-1;
+
+  if (Math.random()<0.7) return;
+
+  obj.x+=deltax;
+  obj.y+=deltay;
+
+  // Keep in bounds
+  if (obj.x<0) obj.x=0;
+  if ((obj.x+TILESIZE+1)>level.width*TILESIZE)
+    obj.x=(level.width-1)*TILESIZE;
+  
+  if (obj.y<0) obj.y=0;
+  if ((obj.y+TILESIZE+1)>level.width*TILESIZE)
+    obj.y=(level.width-1)*TILESIZE;
+}
+
 // Update function called once per frame
 function update()
 {
@@ -541,6 +529,9 @@ function update()
     if (level.things[id].del!=undefined)
       level.things.splice(id, 1);
   }
+
+  // Move the enemy around randomly each update
+  level.enemies.forEach((obj) => moveenemy(obj));
 }
 
 function rafcallback(timestamp)
