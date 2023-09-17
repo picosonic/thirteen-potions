@@ -3,6 +3,7 @@ const TILESIZE=16;
 const TILESPERROW=12;
 const XMAX=180;
 const YMAX=120;
+const ANIMOFFSET=132;
 
 // Game state
 var gs={
@@ -31,7 +32,10 @@ var gs={
   dir:0, //direction (-1=left, 0=none, 1=right)
   speed:2, // walking speed
   flip:false, // if player is horizontally flipped
-  alpha:1, // Level of transparency
+  alpha:1, // level of transparency
+  anim:0, // time until next animation frame change
+  tileoffs:0, // animation frame
+  animgroup:0, // animation group
 
   // Level attributes
   xoffset:0, // current view offset from left (horizontal scroll)
@@ -49,6 +53,7 @@ var gs={
   time:null,
   timerText:"",
   finalTime:-1,
+  startTime:null,
   playerStartedMoving:false,
   potionScore:0,
 };
@@ -56,46 +61,6 @@ var gs={
 /*
 // Runs once, after all assets in preload
 function create() {
-  this.anims.create({
-    key: "right",
-    frames: this.anims.generateFrameNumbers("knight", {
-      start: 0,
-      end: 1,
-    }),
-    frameRate: 10,
-    repeat: -1,
-  });
-
-  this.anims.create({
-    key: "left",
-    frames: this.anims.generateFrameNumbers("knight", {
-      start: 2,
-      end: 3,
-    }),
-    frameRate: 10,
-    repeat: -1,
-  });
-
-  this.anims.create({
-    key: "up-right",
-    frames: this.anims.generateFrameNumbers("knight", {
-      start: 4,
-      end: 5,
-    }),
-    frameRate: 10,
-    repeat: -1,
-  });
-
-  this.anims.create({
-    key: "up-left",
-    frames: this.anims.generateFrameNumbers("knight", {
-      start: 6,
-      end: 7,
-    }),
-    frameRate: 10,
-    repeat: -1,
-  });
-
   text = this.add.text(270, 180, `Potions left: ${13 - potionScore}`, {
     font: "8px",
     fill: "#ffffff",
@@ -127,21 +92,9 @@ function create() {
 
 // Runs once per frame for the duration of the scene
 function update(time, delta) {
-  const prevVelocity = player.body.velocity.clone();
-  player.body.setVelocity(0);
-
   if (potionScore === 13 && finalTime === -1) {
     finalTime = Math.ceil((this.time.now - this.startTime) / 1000);
     timerText.setText(`Final Time: ${finalTime} seconds!`);
-  }
-
-  if (
-    !playerStartedMoving &&
-    prevVelocity.x !== 0 &&
-    prevVelocity.y !== 0
-  ) {
-    playerStartedMoving = true;
-    this.startTime = this.time.now;
   }
 
   // Move the enemy around randomly each update
@@ -184,15 +137,8 @@ function update(time, delta) {
 // Player has hit an ememy, so make transparent, tint red and halve speed for 2 seconds
 function zappy(obj)
 {
-  // Only set timeout once - TODO change to htime
-  if (gs.alpha==1)
-  {
-    setTimeout(() => {
-      gs.speed=2;
-      gs.alpha=1;
-      //player.clearTint();
-    }, 2000);
-  }
+  // Set to be hurt for 2 seconds
+  gs.htime=(2*60);
 
   gs.speed=1;
   gs.alpha=0.6;
@@ -228,7 +174,7 @@ function playfieldsize()
 }
 
 // Scroll level to player
-function scrolltoplayer(dampened)
+function scrolltoplayer()
 {
   var xmiddle=Math.floor((XMAX-TILESIZE)/2);
   var ymiddle=Math.floor((YMAX-TILESIZE)/2);
@@ -247,33 +193,11 @@ function scrolltoplayer(dampened)
 
   // Determine if xoffset should be changed
   if (newxoffs!=gs.xoffset)
-  {
-    if (dampened)
-    {
-      var xdelta=1;
-
-      if (Math.abs(gs.xoffset-newxoffs)>(XMAX/5)) xdelta=4;
-
-      gs.xoffset+=newxoffs>gs.xoffset?xdelta:-xdelta;
-    }
-    else
       gs.xoffset=newxoffs;
-  }
 
   // Determine if xoffset should be changed
   if (newyoffs!=gs.yoffset)
-  {
-    if (dampened)
-    {
-      var ydelta=1;
-
-      if (Math.abs(gs.yoffset-newyoffs)>(YMAX/5)) ydelta=4;
-
-      gs.yoffset+=newyoffs>gs.yoffset?ydelta:-ydelta;
-    }
-    else
       gs.yoffset=newyoffs;
-  }
 }
 
 // Draw tile
@@ -319,7 +243,7 @@ function drawobjects(objs)
 function redraw()
 {
   // Scroll to keep player in view
-  scrolltoplayer(true);
+  scrolltoplayer();
 
   // Clear the canvas
   gs.ctx.clearRect(0, 0, gs.canvas.width, gs.canvas.height);
@@ -339,7 +263,7 @@ function redraw()
   // Draw player
   // TODO adjust frame based on animation
   gs.ctx.globalAlpha=gs.alpha;
-  drawtile(132, Math.floor(gs.x), Math.floor(gs.y));
+  drawtile(ANIMOFFSET+gs.animgroup+gs.tileoffs, Math.floor(gs.x), Math.floor(gs.y));
   gs.ctx.globalAlpha=1;
 }
 
@@ -488,9 +412,29 @@ function standcheck()
   }
 }
 
+// Move animation frame onwards
+function updateanimation()
+{
+  // Do nothing, if not ready to change frame
+  if (gs.anim==0)
+  {
+    if ((gs.hs!=0) || (gs.vs!=0))
+    {
+      gs.tileoffs++;
+      if (gs.tileoffs>1) gs.tileoffs=0;
+    }
+
+    gs.anim=8; // Set time until next frame is shown
+  }
+  else
+    gs.anim--;
+}
+
 // Update player movements
 function updatemovements()
 {
+  var newgroup=0;
+
   // Check if player has tried to leave the map
   offmapcheck();
 
@@ -503,12 +447,26 @@ function updatemovements()
   // When a movement key is pressed, adjust players speed and direction
   if ((gs.keystate!=KEYNONE) || (gs.padstate!=KEYNONE))
   {
+    // Up key
+    if ((ispressed(KEYUP)) && (!ispressed(KEYDOWN)))
+    {
+      gs.vs=-gs.speed;
+      newgroup+=4;
+    }
+
+    // Down key
+    if ((ispressed(KEYDOWN)) && (!ispressed(KEYUP)))
+    {
+      gs.vs=gs.speed;
+    }
+
     // Left key
     if ((ispressed(KEYLEFT)) && (!ispressed(KEYRIGHT)))
     {
       gs.hs=-gs.speed;
       gs.dir=-1;
       gs.flip=true;
+      newgroup+=2;
     }
 
     // Right key
@@ -519,17 +477,32 @@ function updatemovements()
       gs.flip=false;
     }
 
-    // Up key
-    if ((ispressed(KEYUP)) && (!ispressed(KEYDOWN)))
-    {
-      gs.vs=-gs.speed;
-    }
+    gs.animgroup=newgroup;
+  }
 
-    // Down key
-    if ((ispressed(KEYDOWN)) && (!ispressed(KEYUP)))
+  // Decrease hurt timer
+  if (gs.htime>0)
+  {
+    gs.htime--;
+
+    if (gs.htime==0)
     {
-      gs.vs=gs.speed;
-    } 
+      gs.speed=2;
+      gs.alpha=1;
+      //player.clearTint();
+    }
+  }
+
+  // Update any animation frames
+  updateanimation();
+
+  // Detect initial movement to start timer
+  if ((!gs.playerStartedMoving) &&
+      ((gs.hs!=0) ||
+      (gs.vs!=0)))
+  {
+    gs.playerStartedMoving=true;
+    gs.startTime=new Date();
   }
 }
 
@@ -613,7 +586,7 @@ function startgame()
   gs.y=Math.floor(level.spawn.y-(TILESIZE/2));
 
   // Scroll to keep player in view
-  scrolltoplayer(false);
+  scrolltoplayer();
 
   // Start frame callbacks
   window.requestAnimationFrame(rafcallback);
