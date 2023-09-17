@@ -202,8 +202,8 @@ function drawtile(tileid, x, y)
   // Mask off rotate/flip bits
   tileid=tileid&0xffff;
 
-  // Don't draw tile 0 (background) or below
-  if (tileid<=0) return;
+  // Don't draw empty tiles
+  if (tileid<0) return;
 
   // Clip to what's visible
   if (((x-gs.xoffset)<-TILESIZE) && // clip left
@@ -239,7 +239,7 @@ function drawlevel(tiles)
   {
     for (var x=0; x<level.width; x++)
     {
-      var tile=parseInt(tiles[(y*level.width)+x]||1, 10);
+      var tile=parseInt(tiles[(y*level.width)+x]||0, 10);
       drawtile(tile-1, x*TILESIZE, y*TILESIZE);
     }
   }
@@ -346,9 +346,9 @@ function collide(px, py, pw, ph)
   {
     for (var x=0; x<level.width; x++)
     {
-      var tile=parseInt(level.walls[(y*level.width)+x]||1, 10);
+      var tile=parseInt(level.walls[(y*level.width)+x]||0, 10);
 
-      if ((tile-1)!=0)
+      if ((tile)!=0)
       {
         if (overlap(px, py, pw, ph, x*TILESIZE, y*TILESIZE, TILESIZE, TILESIZE))
           return true;
