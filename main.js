@@ -165,11 +165,15 @@ function drawrotatedtile(tilemap, x1, y1, w1, h1, x2, y2, w2, h2, angleInRadians
 // Draw tile
 function drawtile(tileid, x, y)
 {
+  // Don't draw empty tiles
+  if (tileid<0) return;
+
   var angle=0;
   var flip=false;
+  var tbits=(tileid&0xE0000000)>>(7*4);
 
   // Handle rotate/flip bits
-  switch (Math.abs((tileid&0xE0000000)>>(7*4)))
+  switch (tbits)
   {
     case 0x00: // normal
       break;
@@ -184,14 +188,17 @@ function drawtile(tileid, x, y)
       break;
 
     case 0x08: // flip x
+    case -8:
       flip=true;
       break;
 
     case 0x0a: // 90 rotated
+    case -6:
       angle=90;
       break;
 
     case 0x0c: // 180 rotated
+    case -4:
       angle=180;
       break;
 
@@ -201,9 +208,6 @@ function drawtile(tileid, x, y)
 
   // Mask off rotate/flip bits
   tileid=tileid&0xffff;
-
-  // Don't draw empty tiles
-  if (tileid<0) return;
 
   // Clip to what's visible
   if (((x-gs.xoffset)<-TILESIZE) && // clip left
