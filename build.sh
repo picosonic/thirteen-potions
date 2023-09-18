@@ -118,6 +118,8 @@ echo "Cleaning build folder"
 rm -Rf "${buildpath}" >/dev/null 2>&1
 mkdir "${buildpath}"
 
+cp knight_right.png "${buildpath}"
+
 # Concatenate the JS files
 echo "Concatenating JS"
 touch "${jscat}" >/dev/null 2>&1
@@ -127,7 +129,7 @@ do
 done
 
 # Add the index header
-echo -n '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><meta http-equiv="Content-Type" content="text/html;charset=utf-8"/><title>Thirteen Potions</title><meta name="description" content="Get all the potions as fast as you can!"/><meta property="og:image" content="og.png"/><link rel="icon" href="knight_right.png"/><style>' > "${indexcat}"
+echo -n '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><meta http-equiv="Content-Type" content="text/html;charset=utf-8"/><title>Thirteen Potions</title><meta name="description" content="Get all the potions as fast as you can!"/><link rel="icon" href="knight_right.png"/><style>' > "${indexcat}"
 
 # Inject the concatenated and minified CSS files
 echo "Minifying CSS"
