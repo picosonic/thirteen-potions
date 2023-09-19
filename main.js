@@ -47,6 +47,7 @@ var gs={
   gamepadbuttons:[], // Button mapping
   gamepadaxes:[], // Axes mapping
   gamepadaxesval:[], // Axes values
+  mousestate:KEYNONE,
 
   // Other vars
   finalTime:-1, // time when game completed
@@ -485,7 +486,7 @@ function updatemovements()
   standcheck(); 
 
   // When a movement key is pressed, adjust players speed and direction
-  if ((gs.keystate!=KEYNONE) || (gs.padstate!=KEYNONE))
+  if ((gs.keystate!=KEYNONE) || (gs.padstate!=KEYNONE) || (gs.mousestate!=KEYNONE))
   {
     // Up key
     if ((ispressed(KEYUP)) && (!ispressed(KEYDOWN)))
@@ -680,6 +681,19 @@ function init()
   // Set up canvas
   gs.canvas=document.getElementById("canvas");
   gs.ctx=gs.canvas.getContext("2d");
+
+  gs.canvas.onmousedown=function(e)
+  {
+    e = e || window.event;
+    updatemousestate(e);
+  };
+
+  gs.canvas.onmouseup=function(e)
+  {
+    gs.mousestate=KEYNONE;
+  };
+
+  window.addEventListener("mouseout", function() { gs.mousestate=KEYNONE; });
 
   window.addEventListener("resize", function() { playfieldsize(); });
 

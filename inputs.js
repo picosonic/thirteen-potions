@@ -12,12 +12,13 @@ function clearinputstate()
 {
   gs.keystate=KEYNONE;
   gs.padstate=KEYNONE;
+  gs.mousestate=KEYNONE;
 }
 
 // Check if an input is set in keyboard input state
 function ispressed(keybit)
 {
-  return (((gs.keystate&keybit)!=0) || ((gs.padstate&keybit)!=0));
+  return (((gs.keystate&keybit)!=0) || ((gs.padstate&keybit)!=0) || ((gs.mousestate&keybit)!=0));
 }
 
 ///////////
@@ -371,3 +372,58 @@ function gamepadscan()
     gs.gamepad=-1;
   }
 }
+
+/////////
+// Mouse
+/////////
+
+// Update player mouse state
+function updatemousestate(e)
+{
+  var mleft=false;
+  var mright=false;
+  var mup=false;
+  var mdown=false;
+
+  var myx=Math.floor((e.clientX-e.target.getBoundingClientRect().left)/gs.scale);
+  var myy=Math.floor((e.clientY-e.target.getBoundingClientRect().top)/gs.scale);
+
+  // Left
+  if ((myx<(XMAX/2)) && (myy>(YMAX/3)) && (myy<((YMAX/3)*2)))
+    mleft=true;
+
+  // Right
+  if ((myx>(XMAX/2)) && (myy>(YMAX/3)) && (myy<((YMAX/3)*2)))
+    mright=true;
+
+  // Up
+  if ((myy<(YMAX/2)) && (myx>(XMAX/3)) && (myx<((XMAX/3)*2)))
+    mup=true;
+
+  // Down
+  if ((myy>(YMAX/2)) && (myx>(XMAX/3)) && (myx<((XMAX/3)*2)))
+    mdown=true;
+
+  // Update mousestate
+  if (mup)
+    gs.mousestate|=KEYUP;
+  else
+    gs.mousestate&=~KEYUP;
+
+  if (mdown)
+    gs.mousestate|=KEYDOWN;
+  else
+    gs.mousestate&=~KEYDOWN;
+
+  if (mleft)
+    gs.mousestate|=KEYLEFT;
+  else
+    gs.mousestate&=~KEYLEFT;
+
+  if (mright)
+    gs.mousestate|=KEYRIGHT;
+  else
+    gs.mousestate&=~KEYRIGHT;
+  
+    e.preventDefault();
+  }
