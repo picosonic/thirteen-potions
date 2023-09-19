@@ -688,6 +688,15 @@ function init()
     updatemousestate(e);
   };
 
+  gs.canvas.onmousemove=function(e)
+  {
+    if (gs.mousestate!=KEYNONE)
+    {
+      e = e || window.event;
+      updatemousestate(e);
+    }
+  };
+
   gs.canvas.onmouseup=function(e)
   {
     gs.mousestate=KEYNONE;
