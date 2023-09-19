@@ -385,23 +385,25 @@ function updatemousestate(e)
   var mup=false;
   var mdown=false;
 
-  var myx=Math.floor((e.clientX-e.target.getBoundingClientRect().left)/gs.scale);
-  var myy=Math.floor((e.clientY-e.target.getBoundingClientRect().top)/gs.scale);
+  var myx=e.clientX;
+  var myw=window.innerWidth;
+  var myy=e.clientY;
+  var myh=window.innerHeight;
 
   // Left
-  if ((myx<(XMAX/2)) && (myy>(YMAX/3)) && (myy<((YMAX/3)*2)))
+  if ((myx<(myw/2)) && (myy>(myh/3)) && (myy<((myh/3)*2)))
     mleft=true;
 
   // Right
-  if ((myx>(XMAX/2)) && (myy>(YMAX/3)) && (myy<((YMAX/3)*2)))
+  if ((myx>(myw/2)) && (myy>(myh/3)) && (myy<((myh/3)*2)))
     mright=true;
 
   // Up
-  if ((myy<(YMAX/2)) && (myx>(XMAX/3)) && (myx<((XMAX/3)*2)))
+  if ((myy<(myh/2)) && (myx>(myw/3)) && (myx<((myw/3)*2)))
     mup=true;
 
   // Down
-  if ((myy>(YMAX/2)) && (myx>(XMAX/3)) && (myx<((XMAX/3)*2)))
+  if ((myy>(myh/2)) && (myx>(myw/3)) && (myx<((myw/3)*2)))
     mdown=true;
 
   // Update mousestate
@@ -424,6 +426,4 @@ function updatemousestate(e)
     gs.mousestate|=KEYRIGHT;
   else
     gs.mousestate&=~KEYRIGHT;
-  
-    e.preventDefault();
-  }
+}

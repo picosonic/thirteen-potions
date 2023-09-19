@@ -688,7 +688,13 @@ function init()
     updatemousestate(e);
   };
 
-  gs.canvas.onmousemove=function(e)
+  window.onmousedown=function(e)
+  {
+    e = e || window.event;
+    updatemousestate(e);
+  };
+
+  window.onmousemove=function(e)
   {
     if (gs.mousestate!=KEYNONE)
     {
@@ -697,7 +703,7 @@ function init()
     }
   };
 
-  gs.canvas.onmouseup=function(e)
+  window.onmouseup=function(e)
   {
     gs.mousestate=KEYNONE;
   };
