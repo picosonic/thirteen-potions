@@ -373,21 +373,18 @@ function gamepadscan()
   }
 }
 
-/////////
-// Mouse
-/////////
+//////////////////
+// Mouse / Touch
+//////////////////
 
-// Update player mouse state
-function updatemousestate(e)
+function updatepointerstate(myx, myy)
 {
   var mleft=false;
   var mright=false;
   var mup=false;
   var mdown=false;
 
-  var myx=e.clientX;
   var myw=window.innerWidth;
-  var myy=e.clientY;
   var myh=window.innerHeight;
 
   // Left
@@ -426,4 +423,31 @@ function updatemousestate(e)
     gs.mousestate|=KEYRIGHT;
   else
     gs.mousestate&=~KEYRIGHT;
+}
+
+// Update player mouse state
+function updatemousestate(e)
+{
+  updatepointerstate(e.clientX, e.clientY);
+}
+
+function touch2Mouse(e)
+{
+  var theTouch=e.changedTouches[0];
+  var mouseEv;
+
+  switch(e.type)
+  {
+    case "touchstart": mouseEv="mousedown"; break;  
+    case "touchend":   mouseEv="mouseup"; break;
+    case "touchmove":  mouseEv="mousemove"; break;
+    default: return;
+  }
+
+  gs.mousestate=KEYNONE;
+
+  var mouseEvent = new MouseEvent(mouseEv, { screenX: theTouch.screenX, screenY: theTouch.screenY, clientX: theTouch.clientX, clientY:theTouch.clientY});
+  theTouch.target.dispatchEvent(mouseEvent);
+
+  e.preventDefault();
 }

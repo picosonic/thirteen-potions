@@ -708,6 +708,10 @@ function init()
     gs.mousestate=KEYNONE;
   };
 
+  document.addEventListener("touchstart", touch2Mouse, true);
+  document.addEventListener("touchmove", touch2Mouse, true);
+  document.addEventListener("touchend", touch2Mouse, true);
+
   window.addEventListener("mouseout", function() { gs.mousestate=KEYNONE; });
 
   window.addEventListener("resize", function() { playfieldsize(); });
